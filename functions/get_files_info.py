@@ -23,7 +23,7 @@ def get_files_info(working_directory, directory="."):
     if not os.path.isdir(target_dir):
         return f'Error: "{directory}" is not a directory'
 
-    list_of_entries = os.listdir(target_dir)
+    list_of_entries = sorted(os.listdir(target_dir))
     results = []
 
     for entry in list_of_entries:
