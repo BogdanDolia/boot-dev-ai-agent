@@ -1,5 +1,6 @@
 import os
 import sys
+import google.genai.types as types
 
 # Add parent directory to path to allow importing config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,3 +40,18 @@ def get_file_content(working_directory, file_path):
         return content
     except Exception as e:
         return f'Error: Could not read file "{file_path}": {str(e)}'
+
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Gets the content of a specified file relative to the working directory, limited to the first 10,000 characters",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="File path to get content from, relative to the working directory",
+            ),
+        },
+    ),
+)
