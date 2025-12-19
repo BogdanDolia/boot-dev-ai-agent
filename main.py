@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
-from functions.call_function import available_functions
+from functions.call_function import available_functions, call_function
 
 
 def main():
@@ -35,7 +35,19 @@ def main():
             raise RuntimeError("No usage metadata found in response.")
     if response.function_calls:
         for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
+            # print(f"Calling function: {function_call.name}({function_call.args})")
+            content = call_function(function_call, verbose=args.verbose)
+            # Extract and print the result from the function response safely
+            if content.parts and content.parts[0].function_response:
+                fr = content.parts[0].function_response
+                resp = getattr(fr, "response", None)
+                if isinstance(resp, dict):
+                    result = resp.get("result", "")
+                else:
+                    result = str(resp) if resp is not None else ""
+                print(result)
+            else:
+                print(content)
     else:
         print(response.text)
 

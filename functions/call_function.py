@@ -13,6 +13,57 @@ available_functions = types.Tool(
     ],
 )
 
+# Mapping of function names to their module and function
+FUNCTION_MAP = {
+    "get_files_info": ("functions.get_files_info", "get_files_info"),
+    "get_file_content": ("functions.get_file_content", "get_file_content"),
+    "run_python_file": ("functions.run_python_file", "run_python_file"),
+    "write_file": ("functions.write_file", "write_file"),
+}
+
 
 def call_function(function_call, verbose=False):
-    pass
+    if verbose:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print(f" - Calling function: {function_call.name}")
+
+    function_result = ""
+
+    # Dynamically import and call the function
+    if function_call.name in FUNCTION_MAP:
+        module_path, function_name = FUNCTION_MAP[function_call.name]
+        module = __import__(module_path, fromlist=[function_name])
+        func = getattr(module, function_name)
+
+        # Prepare arguments - all functions require working_directory as first param
+        # If not provided in args, default to current directory
+        if isinstance(function_call.args, dict):
+            args_dict = dict(function_call.args)
+            # Inject working_directory if not present (for security, default to ".")
+            if "working_directory" not in args_dict:
+                args_dict["working_directory"] = "./calculator"
+            function_result = func(**args_dict)
+        else:
+            # If args is not a dict, treat it as working_directory
+            function_result = func(function_call.args)
+    else:
+        return types.Content(
+            role="tool",
+            parts=[
+                types.Part.from_function_response(
+                    name=function_call.name,
+                    response={"error": f"Unknown function: {function_call.name}"},
+                )
+            ],
+        )
+
+    return types.Content(
+        role="tool",
+        parts=[
+            types.Part.from_function_response(
+                name=function_call.name,
+                response={"result": function_result},
+            )
+        ],
+    )
