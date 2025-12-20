@@ -13,3 +13,9 @@ dependencies = [
 dev = [
     "ruff>=0.14.9",
 ]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Use spaces for indentation
+indent-style = "space"
